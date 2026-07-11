@@ -1,26 +1,75 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@theme {
+  /* Board felt */
+  --color-felt: #0b2c24;
+  --color-felt-deep: #071711;
+  /* Paper */
+  --color-cream: #f3eddc;
+  --color-cream-soft: #ece4cd;
+  --color-ink: #23201a;
+  --color-charcoal: #2e2b26;
+  /* Metal */
+  --color-gold: #c6a15b;
+  --color-gold-deep: #9c7a3c;
+  /* Property bands (muted) */
+  --color-band-brown: #6b4a36;
+  --color-band-ltblue: #7fa6b8;
+  --color-band-pink: #b06a82;
+  --color-band-orange: #c87d4f;
+  --color-band-red: #a5443a;
+  --color-band-yellow: #d9b054;
+  --color-band-green: #4e7a5a;
+  --color-band-dkblue: #34506e;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --font-display: var(--font-fraunces);
   --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-felt-deep);
+  color: var(--color-cream);
+  font-family: var(--font-sans);
+}
+
+::selection {
+  background: var(--color-gold);
+  color: var(--color-felt-deep);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+.felt-surface {
+  background: radial-gradient(
+    120% 90% at 50% 0%,
+    var(--color-felt) 0%,
+    var(--color-felt-deep) 78%
+  );
+}
+
+/* Scroll reveal: content is visible by default; JS opts elements in.
+   Never hides content from crawlers, no-JS, or reduced-motion visitors. */
+[data-reveal] {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .js [data-reveal] {
+    opacity: 0;
+    transform: translateY(14px);
+    transition:
+      opacity 0.6s ease,
+      transform 0.6s ease;
+  }
+  .js [data-reveal].is-revealed {
+    opacity: 1;
+    transform: none;
+  }
 }
