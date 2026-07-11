@@ -14,7 +14,9 @@ test.describe("no-JS crawler view", () => {
       page.getByRole("heading", { name: "Sentinel Ops" }),
     ).toBeVisible();
     await expect(page.getByText("93-test CI suite")).toBeVisible();
-    await expect(page.getByText("Minsky's Pizza — 7 Years")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Minsky's Pizza — 7 Years" }),
+    ).toBeVisible();
     // Reveal elements must be fully visible without JS.
     const first = page.locator("[data-reveal]").first();
     await expect(first).toBeVisible();

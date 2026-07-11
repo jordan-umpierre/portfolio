@@ -1,9 +1,12 @@
 # Portfolio — Jordan Umpierre
 
 Personal portfolio, themed as a board-game homage: every section of the site is
-a space on a 28-space board defined in a single content registry. Milestone 1
-(this) is the fully static classic experience; milestone 2 mounts an
-interactive 3D board above it as a progressive enhancement.
+a space on a 28-space board defined in a single content registry — and the
+board is real. A procedurally built 3D board (zero glTF assets) mounts above
+the classic content on capable devices: roll the dice, watch the top-hat token
+hop space to space, and the space you land on opens its panel.
+
+![The board](public/board-poster.jpg)
 
 ## Stack
 
@@ -24,6 +27,17 @@ Tailwind CSS 4 · Playwright · Vercel
 - **SEO plumbing** — per-project `generateMetadata`, generated
   title-deed-style OG images (`opengraph-image.tsx`), JSON-LD (`Person` +
   `SoftwareSourceCode`), `sitemap.ts`, `robots.ts`.
+- **The 3D board is a guest, not the host** — `src/components/board3d/` is a
+  lazy client island loaded on `requestIdleCallback` (or the poster's "Enter
+  the Board" button), dynamic-imported so `three` never touches the initial
+  JS. A capability gate (WebGL2, `prefers-reduced-motion`, device
+  memory/cores) and a persisted "Recruiter mode" toggle both fall back to the
+  identical static content. Everything in the scene is procedural: the board
+  face is one 2048px Canvas2D texture, the dice tumble is choreographed onto
+  deterministic face quaternions, the token is a lathed top hat, and the whole
+  scene renders on a demand frameloop — zero idle GPU work. Keyboard path:
+  arrows browse a roving-tabindex listbox of all 28 spaces, Enter travels,
+  R rolls, Esc closes; a live region announces rolls and landings.
 
 ## Develop
 

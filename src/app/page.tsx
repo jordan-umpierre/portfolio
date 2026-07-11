@@ -1,3 +1,4 @@
+import { BoardStage } from "@/components/board3d/BoardStage";
 import { RevealObserver } from "@/components/RevealObserver";
 import {
   ClientWork,
@@ -40,6 +41,7 @@ export default function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
       />
+      <BoardStage />
       <Hero />
       <FeaturedProjects />
       <ClientWork />
