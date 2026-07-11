@@ -12,16 +12,16 @@ const nav = [
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-40 border-b border-cream/10 bg-felt-deep/90 backdrop-blur">
+    <header className="border-cream/10 bg-felt-deep/90 sticky top-0 z-40 border-b backdrop-blur">
       <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-x-6 gap-y-1 px-5 py-3">
         <Link
           href="/"
-          className="font-display text-lg tracking-wide text-cream hover:text-gold"
+          className="font-display text-cream hover:text-gold text-lg tracking-wide"
         >
           {site.name}
         </Link>
         <nav aria-label="Main">
-          <ul className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-cream/80">
+          <ul className="text-cream/80 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
             {nav.map((item) => (
               <li key={item.href}>
                 <Link href={item.href} className="hover:text-gold">

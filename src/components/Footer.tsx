@@ -2,8 +2,8 @@ import { site } from "@/content/site";
 
 export function Footer() {
   return (
-    <footer className="border-t border-cream/10">
-      <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-5 py-8 text-sm text-cream/60">
+    <footer className="border-cream/10 border-t">
+      <div className="text-cream/60 mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-5 py-8 text-sm">
         <p>
           © {new Date().getFullYear()} {site.name} · {site.location}
         </p>

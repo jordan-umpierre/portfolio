@@ -13,11 +13,17 @@ const assert = (cond: boolean, msg: string) => {
 assert(board.length === 28, `board has ${board.length} spaces, expected 28`);
 
 board.forEach((space, i) => {
-  assert(space.index === i, `space ${space.slug} index ${space.index} !== position ${i}`);
+  assert(
+    space.index === i,
+    `space ${space.slug} index ${space.index} !== position ${i}`,
+  );
 });
 
 for (const i of [0, 7, 14, 21]) {
-  assert(board[i]?.kind === "corner", `space ${i} must be a corner, got ${board[i]?.kind}`);
+  assert(
+    board[i]?.kind === "corner",
+    `space ${i} must be a corner, got ${board[i]?.kind}`,
+  );
 }
 assert(
   board.filter((s) => s.kind === "corner").length === 4,

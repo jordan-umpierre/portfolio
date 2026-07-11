@@ -264,14 +264,7 @@ export const board: BoardSpace[] = [
     kind: "railroad",
     slug: "data-line",
     title: "Data Line",
-    items: [
-      "PostgreSQL",
-      "MongoDB",
-      "MySQL",
-      "Supabase",
-      "AWS S3",
-      "SQL",
-    ],
+    items: ["PostgreSQL", "MongoDB", "MySQL", "Supabase", "AWS S3", "SQL"],
   },
   {
     index: 19,
