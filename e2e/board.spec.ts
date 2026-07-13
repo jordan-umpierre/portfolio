@@ -56,7 +56,7 @@ test.describe("board interactions", () => {
   test("roll announces and opens the landing space's panel", async ({
     page,
   }) => {
-    await page.getByRole("button", { name: /Roll the dice/ }).click();
+    await page.getByRole("button", { name: /ROLL/ }).click();
     await page.waitForTimeout(4500); // tumble + hops
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
@@ -86,6 +86,21 @@ test.describe("board interactions", () => {
     await page.locator("canvas").waitFor({ timeout: 15_000 });
     await page.waitForTimeout(5000);
     await expect(page.getByRole("dialog")).toContainText("Freightline");
+  });
+
+  test("board is the landing: classic hides, nav links switch to classic", async ({
+    page,
+  }) => {
+    // classic sections are display:none while the board is the landing
+    await expect(
+      page.getByRole("heading", { name: "Featured Projects" }),
+    ).toBeHidden();
+    // header anchor links flip to classic mode and scroll to the section
+    await page.getByRole("link", { name: "Projects", exact: true }).click();
+    await expect(page.locator("canvas")).toHaveCount(0);
+    await expect(
+      page.getByRole("heading", { name: "Featured Projects" }),
+    ).toBeVisible();
   });
 
   test("mode toggle survives reload", async ({ page }) => {

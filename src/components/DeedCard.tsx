@@ -12,6 +12,18 @@ const bandClass: Record<Project["band"], string> = {
   dkblue: "bg-band-dkblue",
 };
 
+/* Vivid bands need per-color text: light bands take ink, dark take cream. */
+const bandText: Record<Project["band"], string> = {
+  brown: "text-cream",
+  ltblue: "text-ink",
+  pink: "text-cream",
+  orange: "text-ink",
+  red: "text-cream",
+  yellow: "text-ink",
+  green: "text-cream",
+  dkblue: "text-cream",
+};
+
 /** Monopoly title-deed styled project card. */
 export function DeedCard({ project }: { project: Project }) {
   return (
@@ -19,7 +31,9 @@ export function DeedCard({ project }: { project: Project }) {
       data-reveal
       className="border-ink/15 bg-cream text-ink flex flex-col overflow-hidden rounded-md border shadow-lg"
     >
-      <div className={`${bandClass[project.band]} text-cream px-5 py-3`}>
+      <div
+        className={`${bandClass[project.band]} ${bandText[project.band]} border-ink/20 border-b-2 px-5 py-3`}
+      >
         <p className="text-[0.65rem] font-semibold tracking-[0.2em] uppercase opacity-80">
           Title Deed · {project.year}
         </p>

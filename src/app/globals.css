@@ -1,29 +1,35 @@
 @import "tailwindcss";
 
 @theme {
-  /* Board felt */
+  /* Board felt (page backdrop) */
   --color-felt: #0b2c24;
   --color-felt-deep: #071711;
+  /* Board face — the pale green of a real Monopoly board */
+  --color-board: #cfe3c8;
   /* Paper */
   --color-cream: #f3eddc;
   --color-cream-soft: #ece4cd;
-  --color-ink: #23201a;
+  --color-ink: #1d1a15;
   --color-charcoal: #2e2b26;
   /* Metal */
   --color-gold: #c6a15b;
   --color-gold-deep: #9c7a3c;
-  /* Property bands (muted) */
-  --color-band-brown: #6b4a36;
-  --color-band-ltblue: #7fa6b8;
-  --color-band-pink: #b06a82;
-  --color-band-orange: #c87d4f;
-  --color-band-red: #a5443a;
-  --color-band-yellow: #d9b054;
-  --color-band-green: #4e7a5a;
-  --color-band-dkblue: #34506e;
+  /* Monopoly logo / corner red */
+  --color-mred: #d6202f;
+  --color-mred-deep: #a6192e;
+  /* Property bands (vivid, true to the board) */
+  --color-band-brown: #955436;
+  --color-band-ltblue: #a5ddf5;
+  --color-band-pink: #d93a96;
+  --color-band-orange: #f7941d;
+  --color-band-red: #ed1b24;
+  --color-band-yellow: #ffd900;
+  --color-band-green: #1fb25a;
+  --color-band-dkblue: #0072bb;
 
   --font-display: var(--font-fraunces);
   --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
 }
 
 body {
@@ -44,6 +50,14 @@ html {
   html {
     scroll-behavior: auto;
   }
+}
+
+/* 3D landing mode: the board is the page; classic sections hide.
+   The class is only ever added client-side after the capability gate
+   passes, so crawlers, no-JS, and reduced-motion visitors always get
+   the full classic HTML. */
+.board-landing .classic-content {
+  display: none;
 }
 
 .felt-surface {

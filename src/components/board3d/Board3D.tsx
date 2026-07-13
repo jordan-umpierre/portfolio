@@ -3,7 +3,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { PerformanceMonitor, RoundedBox } from "@react-three/drei";
+import {
+  Environment,
+  Lightformer,
+  PerformanceMonitor,
+  RoundedBox,
+} from "@react-three/drei";
 import { board } from "@/content/board";
 import { createBoardTexture } from "./boardTexture";
 import { BOARD_SIZE, BOARD_THICKNESS, spaceTransforms } from "./geometry";
@@ -17,15 +22,39 @@ function BoardMesh() {
   useEffect(() => () => texture.dispose(), [texture]);
   return (
     <group>
-      <mesh position={[0, -BOARD_THICKNESS / 2, 0]}>
-        <boxGeometry args={[BOARD_SIZE, BOARD_THICKNESS, BOARD_SIZE]} />
-        <meshStandardMaterial color="#2e2b26" />
-      </mesh>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.001, 0]}>
+      {/* slab with softly rounded edges, cream sides like a real board */}
+      <RoundedBox
+        args={[BOARD_SIZE + 0.12, BOARD_THICKNESS, BOARD_SIZE + 0.12]}
+        radius={0.06}
+        position={[0, -BOARD_THICKNESS / 2, 0]}
+        castShadow
+        receiveShadow
+      >
+        <meshStandardMaterial color="#e8dfc9" roughness={0.7} />
+      </RoundedBox>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.002, 0]} receiveShadow>
         <planeGeometry args={[BOARD_SIZE, BOARD_SIZE]} />
-        <meshStandardMaterial map={texture} roughness={0.92} />
+        <meshStandardMaterial map={texture} roughness={0.85} />
       </mesh>
     </group>
+  );
+}
+
+/** Dark table under the board + depth fog so the scene reads as a room. */
+function Table() {
+  return (
+    <>
+      <color attach="background" args={["#08130f"]} />
+      <fog attach="fog" args={["#08130f", 20, 46]} />
+      <mesh
+        rotation={[-Math.PI / 2, 0, 0]}
+        position={[0, -BOARD_THICKNESS - 0.02, 0]}
+        receiveShadow
+      >
+        <circleGeometry args={[30, 48]} />
+        <meshStandardMaterial color="#0d221c" roughness={0.95} />
+      </mesh>
+    </>
   );
 }
 
@@ -132,28 +161,28 @@ function Token() {
         <circleGeometry args={[0.34, 24]} />
         <meshBasicMaterial color="#000000" transparent opacity={0.28} />
       </mesh>
-      {/* brim */}
-      <mesh position={[0, 0.05, 0]}>
+      {/* brim — polished pewter, like the die-cast token */}
+      <mesh position={[0, 0.05, 0]} castShadow>
         <cylinderGeometry args={[0.34, 0.36, 0.06, 32]} />
         <meshStandardMaterial
-          color="#2e2b26"
-          metalness={0.35}
-          roughness={0.35}
+          color="#c9ccd2"
+          metalness={0.95}
+          roughness={0.22}
         />
       </mesh>
       {/* crown */}
-      <mesh position={[0, 0.33, 0]}>
+      <mesh position={[0, 0.33, 0]} castShadow>
         <cylinderGeometry args={[0.21, 0.24, 0.52, 32]} />
         <meshStandardMaterial
-          color="#2e2b26"
-          metalness={0.35}
-          roughness={0.35}
+          color="#c9ccd2"
+          metalness={0.95}
+          roughness={0.22}
         />
       </mesh>
       {/* gold band */}
       <mesh position={[0, 0.14, 0]}>
         <cylinderGeometry args={[0.245, 0.25, 0.07, 32]} />
-        <meshStandardMaterial color={GOLD} metalness={0.8} roughness={0.25} />
+        <meshStandardMaterial color={GOLD} metalness={0.9} roughness={0.2} />
       </mesh>
     </group>
   );
@@ -302,6 +331,7 @@ function Dice() {
           ref={refs[i]}
           position={[i === 0 ? -0.45 : 0.45, 0.26, 0]}
           material={materials}
+          castShadow
         >
           <boxGeometry args={[0.5, 0.5, 0.5]} />
         </mesh>
@@ -329,9 +359,9 @@ function Buildings() {
                 ? [t.x, 0.14, t.z + t.d / 2 - inward]
                 : [t.x - t.w / 2 + inward, 0.14, t.z];
         return (
-          <mesh key={i} position={pos} rotation={[0, t.rotY, 0]}>
+          <mesh key={i} position={pos} rotation={[0, t.rotY, 0]} castShadow>
             <boxGeometry args={[0.42, 0.28, 0.24]} />
-            <meshStandardMaterial color="#a5443a" roughness={0.6} />
+            <meshStandardMaterial color="#ed1b24" roughness={0.35} />
           </mesh>
         );
       })}
@@ -347,9 +377,9 @@ function Buildings() {
                 ? [t.x, 0.1, t.z + t.d / 2 - inward]
                 : [t.x - t.w / 2 + inward, 0.1, t.z];
         return (
-          <mesh key={i} position={pos} rotation={[0, t.rotY, 0]}>
+          <mesh key={i} position={pos} rotation={[0, t.rotY, 0]} castShadow>
             <boxGeometry args={[0.2, 0.2, 0.2]} />
-            <meshStandardMaterial color="#4e7a5a" roughness={0.6} />
+            <meshStandardMaterial color="#1fb25a" roughness={0.35} />
           </mesh>
         );
       })}
@@ -358,16 +388,17 @@ function Buildings() {
 }
 
 function DeckStacks() {
+  // sits on the diagonal callouts painted into the texture
   return (
     <group>
-      <group position={[-1.9, 0.06, -1.6]} rotation={[0, Math.PI / 4, 0]}>
-        <RoundedBox args={[1.5, 0.12, 0.95]} radius={0.04}>
-          <meshStandardMaterial color="#c87d4f" roughness={0.7} />
+      <group position={[-1.9, 0.06, -1.55]} rotation={[0, Math.PI / 4, 0]}>
+        <RoundedBox args={[1.5, 0.12, 0.95]} radius={0.04} castShadow>
+          <meshStandardMaterial color="#f7941d" roughness={0.55} />
         </RoundedBox>
       </group>
-      <group position={[1.9, 0.06, 1.0]} rotation={[0, Math.PI / 4, 0]}>
-        <RoundedBox args={[1.5, 0.12, 0.95]} radius={0.04}>
-          <meshStandardMaterial color="#d9b054" roughness={0.7} />
+      <group position={[1.9, 0.06, 1.55]} rotation={[0, Math.PI / 4, 0]}>
+        <RoundedBox args={[1.5, 0.12, 0.95]} radius={0.04} castShadow>
+          <meshStandardMaterial color="#a5ddf5" roughness={0.55} />
         </RoundedBox>
       </group>
     </group>
@@ -401,7 +432,10 @@ function GoShimmer() {
 /** Intro sweep + pointer parallax + drift toward the token/selection. */
 /* eslint-disable react-hooks/immutability -- useFrame callbacks run per-frame outside render; mutating the camera and refs there is the react-three-fiber model */
 function CameraRig() {
-  const { camera, invalidate } = useThree();
+  const { camera, invalidate, scene, size } = useThree();
+  // Portrait fit: pull back until the board's width fits the narrow viewport.
+  const aspect = size.width / Math.max(1, size.height);
+  const fit = Math.max(1, 0.92 / aspect);
   const intro = useRef(0);
   const pointer = useRef({ x: 0, y: 0 });
   const reduced = useMemo(
@@ -433,13 +467,19 @@ function CameraRig() {
     const lean = s.path.length ? 0.14 : 0.06;
     const par = 2 * (Math.PI / 180); // ±2°
     const baseX = focusT.x * lean + Math.sin(pointer.current.x * par) * 10;
-    const baseY = THREE.MathUtils.lerp(16.5, 13.2, e) - pointer.current.y * 0.4;
-    const baseZ = THREE.MathUtils.lerp(2.5, 7.2, e) + focusT.z * lean;
+    // raked game-camera angle that still frames the whole board
+    const baseY =
+      THREE.MathUtils.lerp(19, 16.8, e) * fit - pointer.current.y * 0.5;
+    const baseZ = THREE.MathUtils.lerp(2.0, 8.2, e) * fit + focusT.z * lean;
+    if (scene.fog instanceof THREE.Fog) {
+      scene.fog.near = 20 * fit;
+      scene.fog.far = 46 * fit;
+    }
     const k = 1 - Math.exp(-4 * delta);
     camera.position.x += (baseX - camera.position.x) * k;
     camera.position.y += (baseY - camera.position.y) * k;
     camera.position.z += (baseZ - camera.position.z) * k;
-    camera.lookAt(focusT.x * lean * 0.6, 0, focusT.z * lean * 0.6);
+    camera.lookAt(focusT.x * lean * 0.6, 0, focusT.z * lean * 0.6 - 1.0);
     if (s.path.length || intro.current < 1) invalidate();
   });
   return null;
@@ -448,8 +488,50 @@ function CameraRig() {
 function Scene() {
   return (
     <>
-      <ambientLight intensity={0.85} />
-      <directionalLight position={[4, 9, 5]} intensity={1.6} />
+      <ambientLight intensity={0.35} />
+      <hemisphereLight args={["#dfeee2", "#0a1512", 0.55]} />
+      {/* warm key with shadows */}
+      <directionalLight
+        position={[6, 12, 5]}
+        intensity={2.2}
+        color="#fff2dd"
+        castShadow
+        shadow-mapSize-width={2048}
+        shadow-mapSize-height={2048}
+        shadow-camera-left={-8}
+        shadow-camera-right={8}
+        shadow-camera-top={8}
+        shadow-camera-bottom={-8}
+        shadow-camera-near={2}
+        shadow-camera-far={30}
+        shadow-bias={-0.0004}
+      />
+      {/* cool rim from the far side */}
+      <directionalLight position={[-7, 6, -6]} intensity={0.7} color="#bcd6ff" />
+      {/* local procedural env map so the metal token and dice read as material */}
+      <Environment resolution={64} frames={1}>
+        <Lightformer
+          intensity={1.4}
+          rotation-x={Math.PI / 2}
+          position={[0, 6, 0]}
+          scale={[12, 12, 1]}
+        />
+        <Lightformer
+          intensity={0.7}
+          rotation-y={Math.PI / 2}
+          position={[-6, 2, -1]}
+          scale={[8, 3, 1]}
+          color="#ffe9c9"
+        />
+        <Lightformer
+          intensity={0.6}
+          rotation-y={-Math.PI / 2}
+          position={[6, 2, 0]}
+          scale={[8, 3, 1]}
+          color="#cfe4ff"
+        />
+      </Environment>
+      <Table />
       <BoardMesh />
       <Hitboxes />
       <SelectionQuad />
@@ -475,27 +557,32 @@ export default function Board3D() {
       <div className="h-full w-full" aria-hidden>
         <Canvas
           frameloop="demand"
+          shadows
           dpr={[1, dpr]}
-          camera={{ fov: 35, position: [0, 16, 2.5], near: 0.1, far: 60 }}
-          gl={{ antialias: true, toneMapping: THREE.NoToneMapping }}
+          camera={{ fov: 36, position: [0, 17, 2], near: 0.1, far: 60 }}
+          gl={{
+            antialias: true,
+            toneMapping: THREE.ACESFilmicToneMapping,
+            toneMappingExposure: 1.0,
+          }}
         >
           <PerformanceMonitor onDecline={() => setDpr(1.25)}>
             <Scene />
           </PerformanceMonitor>
         </Canvas>
       </div>
-      <div className="pointer-events-none absolute inset-x-0 bottom-3 flex justify-center">
-        <div className="border-cream/20 bg-felt-deep/85 pointer-events-auto flex items-center gap-3 rounded-full border px-4 py-2 backdrop-blur">
+      <div className="pointer-events-none absolute inset-x-0 bottom-4 flex justify-center">
+        <div className="border-cream/15 pointer-events-auto flex items-center gap-3 rounded-full border bg-black/60 px-4 py-2 shadow-2xl backdrop-blur-md">
           <button
             type="button"
             onClick={roll}
             disabled={rolling || traveling}
-            className="bg-gold text-felt-deep hover:bg-gold-deep hover:text-cream rounded-full px-4 py-1.5 text-sm font-semibold disabled:opacity-50"
+            className="bg-mred hover:bg-mred-deep text-cream rounded-full px-5 py-2 text-sm font-bold tracking-wide shadow-lg disabled:opacity-50"
           >
-            🎲 Roll the dice
+            🎲 ROLL
           </button>
-          <span className="text-cream/70 text-xs">
-            Laps: {laps} · or tap any space
+          <span className="text-cream/75 font-mono text-xs">
+            laps: {laps} · tap any space to travel
           </span>
         </div>
       </div>

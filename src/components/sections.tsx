@@ -23,13 +23,17 @@ function SectionHeading({
   kicker,
   title,
   id,
+  accent = "bg-gold",
 }: {
   kicker: string;
   title: string;
   id?: string;
+  /** Board band color for this section — same bar geometry everywhere. */
+  accent?: string;
 }) {
   return (
     <header data-reveal className="mb-8" id={id}>
+      <span className={`mb-3 block h-1.5 w-14 rounded-full ${accent}`} />
       <p className="text-gold text-xs font-semibold tracking-[0.25em] uppercase">
         {kicker}
       </p>
@@ -92,7 +96,7 @@ export function FeaturedProjects() {
   ];
   return (
     <section id="featured-projects" className="mx-auto max-w-5xl px-5 py-16">
-      <SectionHeading kicker="Properties" title="Featured Projects" />
+      <SectionHeading kicker="Properties" title="Featured Projects" accent="bg-band-red" />
       <div className="grid gap-6 sm:grid-cols-2">
         {featured.map((slug) => {
           const p = projectBySlug.get(slug);
@@ -110,6 +114,7 @@ export function ClientWork() {
       <SectionHeading
         kicker="Real businesses, real stakes"
         title="Client Work"
+        accent="bg-band-green"
       />
       <div className="grid gap-6 sm:grid-cols-2">
         {clients.map((p) => (
@@ -119,6 +124,15 @@ export function ClientWork() {
     </section>
   );
 }
+
+/* Uniform colored top border per line — same geometry, board-band colors. */
+const lineAccent: Record<string, string> = {
+  "frontend-line": "border-t-band-dkblue",
+  "backend-line": "border-t-band-red",
+  "data-line": "border-t-band-yellow",
+  "cloud-ai-line": "border-t-band-green",
+  "the-toolbox": "border-t-band-orange",
+};
 
 export function Skills() {
   const lines = [
@@ -130,14 +144,14 @@ export function Skills() {
   ];
   return (
     <section id="skills" className="mx-auto max-w-5xl px-5 py-16">
-      <SectionHeading kicker="Ride all four lines" title="Skills" />
+      <SectionHeading kicker="Ride all four lines" title="Skills" accent="bg-band-dkblue" />
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {lines.map((line) => (
           <div
             key={line.slug}
             data-reveal
             id={line.slug}
-            className="border-cream/15 bg-felt rounded-md border p-5"
+            className={`border-cream/15 bg-felt rounded-md border border-t-4 p-5 ${lineAccent[line.slug] ?? "border-t-gold"}`}
           >
             <h3 className="font-display text-gold text-lg">
               {line.kind === "utility" ? "⚙ " : "🚂 "}
@@ -168,6 +182,7 @@ export function Experience() {
       <SectionHeading
         kicker="The operator story"
         title="Experience & Leadership"
+        accent="bg-band-brown"
       />
       <div className="grid gap-8 sm:grid-cols-[2fr_1fr]">
         <div data-reveal id={minskys.slug} className="space-y-4">
@@ -205,6 +220,7 @@ export function Education() {
       <SectionHeading
         kicker="Self-funded, full-time"
         title="Education & Certifications"
+        accent="bg-band-ltblue"
       />
       <div className="grid gap-8 sm:grid-cols-[2fr_1fr]">
         <div data-reveal id={wgu.slug} className="space-y-4">
@@ -235,7 +251,7 @@ export function Personal() {
   const coffee = space<FlavorSpace>("coffee-tax");
   return (
     <section id="off-the-clock" className="mx-auto max-w-5xl px-5 py-16">
-      <SectionHeading kicker="Free parking" title={offClock.title} />
+      <SectionHeading kicker="Free parking" title={offClock.title} accent="bg-band-orange" />
       <p data-reveal className="text-cream/85 max-w-2xl leading-relaxed">
         {offClock.body}
       </p>
@@ -291,6 +307,7 @@ export function Contact() {
           kicker="Advance to GO"
           title={talk.title}
           id="what-im-looking-for"
+          accent="bg-mred"
         />
         <p data-reveal className="text-cream/85 max-w-2xl leading-relaxed">
           {pitch.body[1]}

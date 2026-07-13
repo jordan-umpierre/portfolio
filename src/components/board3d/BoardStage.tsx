@@ -9,8 +9,8 @@ import { SpacePanel } from "./SpacePanel";
 const Board3D = dynamic(() => import("./Board3D"), { ssr: false });
 
 const PREF_KEY = "board-mode"; // "3d" | "classic"
-/** Idle-load waits this long so chunk parse + texture gen land well after LCP/TBT windows. */
-const ENGAGE_DELAY_MS = 3500;
+/** Idle-load delay: the board is the landing now, so engage soon after LCP settles. */
+const ENGAGE_DELAY_MS = 1200;
 
 type Gate = "unknown" | "ok" | "blocked";
 
@@ -67,6 +67,34 @@ export function BoardStage() {
     });
   };
 
+  // The board is the landing page: while it's active, the classic sections
+  // hide (client-side only — crawlers and no-JS always get the classic HTML).
+  useEffect(() => {
+    const landing = gate === "ok" && mode === "3d";
+    document.documentElement.classList.toggle("board-landing", landing);
+    return () => document.documentElement.classList.remove("board-landing");
+  }, [gate, mode]);
+
+  // Header anchor links target classic sections, which are hidden while the
+  // board is the landing — intercept them: switch to classic, then scroll.
+  useEffect(() => {
+    if (gate !== "ok" || mode !== "3d") return;
+    const onClick = (e: MouseEvent) => {
+      const a = (e.target as HTMLElement).closest?.('a[href^="/#"]');
+      if (!a) return;
+      e.preventDefault();
+      const id = a.getAttribute("href")!.slice(2);
+      localStorage.setItem(PREF_KEY, "classic");
+      setMode("classic");
+      window.setTimeout(
+        () => document.getElementById(id)?.scrollIntoView(),
+        60,
+      );
+    };
+    document.addEventListener("click", onClick);
+    return () => document.removeEventListener("click", onClick);
+  }, [gate, mode]);
+
   useEffect(() => {
     if (gate !== "ok" || mode !== "3d" || engaged) return;
     const timer = window.setTimeout(() => {
@@ -121,7 +149,7 @@ export function BoardStage() {
           data-testid="board-toggle"
           className="border-gold/60 text-gold hover:bg-gold hover:text-felt-deep rounded border px-3 py-1.5 text-xs font-medium"
         >
-          🎩 View as the 3D board
+          🎩 Enter the board (3D)
         </button>
       </div>
     );
@@ -133,52 +161,55 @@ export function BoardStage() {
       className="hidden motion-reduce:hidden! [.js_&]:block"
       data-testid="board-stage"
     >
-      <div className="felt-surface border-cream/10 border-b">
-        <div className="mx-auto max-w-6xl px-3 pt-4 pb-2">
-          <div className="flex items-center justify-between px-2 pb-2">
-            <p className="text-gold text-xs font-semibold tracking-[0.25em] uppercase">
-              The Board
-            </p>
-            <button
-              type="button"
-              onClick={toggle}
-              data-testid="board-toggle"
-              className="border-cream/25 text-cream/80 hover:border-gold hover:text-gold rounded border px-3 py-1.5 text-xs font-medium"
-            >
-              Recruiter mode (classic)
-            </button>
-          </div>
-          <div className="relative h-[70vh] min-h-[420px] w-full sm:h-[78vh]">
-            {engaged ? (
-              <Board3D />
-            ) : (
-              <button
-                type="button"
-                onClick={() => setEngaged(true)}
-                className="group border-cream/10 relative block h-full w-full overflow-hidden rounded-md border"
-              >
-                <Image
-                  src="/board-poster.jpg"
-                  alt="Top-down view of the portfolio as a Monopoly-style board"
-                  fill
-                  priority
-                  sizes="100vw"
-                  className="object-cover"
-                />
-                <span className="bg-felt-deep/30 group-hover:bg-felt-deep/10 absolute inset-0 flex items-center justify-center transition-colors">
-                  <span className="bg-gold text-felt-deep rounded-full px-6 py-3 font-semibold shadow-lg">
-                    🎲 Enter the Board
-                  </span>
-                </span>
-              </button>
-            )}
-            <SpacePanel />
-          </div>
-          {/* Interacting with the space list is also an engage signal. */}
-          <div onFocusCapture={() => setEngaged(true)}>
-            <SpaceNavigator />
-          </div>
+      <div className="relative h-[calc(100dvh-57px)] min-h-[480px] w-full bg-[#08130f]">
+        {engaged ? (
+          <Board3D />
+        ) : (
+          <button
+            type="button"
+            onClick={() => setEngaged(true)}
+            className="group relative block h-full w-full overflow-hidden"
+          >
+            <Image
+              src="/board-poster.jpg"
+              alt="Top-down view of the portfolio as a Monopoly-style board"
+              fill
+              priority
+              sizes="100vw"
+              className="object-cover"
+            />
+            <span className="bg-felt-deep/30 group-hover:bg-felt-deep/10 absolute inset-0 flex items-center justify-center transition-colors">
+              <span className="bg-mred text-cream rounded-full px-6 py-3 font-bold shadow-lg">
+                🎲 Enter the Board
+              </span>
+            </span>
+          </button>
+        )}
+        {/* landing overlay: who this is + the way out */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between gap-3 p-4">
+          <p className="text-cream/85 max-w-[60%] font-mono text-xs leading-relaxed sm:text-sm">
+            full-stack software engineer · kansas city ·{" "}
+            <span className="text-cream/60">
+              roll the dice — every space is real work
+            </span>
+          </p>
+          <button
+            type="button"
+            onClick={toggle}
+            data-testid="board-toggle"
+            className="border-cream/25 text-cream/85 hover:border-gold hover:text-gold pointer-events-auto rounded-full border bg-black/40 px-4 py-1.5 text-xs font-medium backdrop-blur"
+          >
+            Recruiter mode (classic site)
+          </button>
         </div>
+        <SpacePanel />
+      </div>
+      {/* Interacting with the space list is also an engage signal. */}
+      <div
+        onFocusCapture={() => setEngaged(true)}
+        className="border-cream/10 border-b"
+      >
+        <SpaceNavigator />
       </div>
     </section>
   );

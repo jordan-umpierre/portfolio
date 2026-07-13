@@ -42,14 +42,18 @@ export default function Home() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
       />
       <BoardStage />
-      <Hero />
-      <FeaturedProjects />
-      <ClientWork />
-      <Skills />
-      <Experience />
-      <Education />
-      <Personal />
-      <Contact />
+      {/* Classic sections: always in the HTML (crawlers, no-JS, reduced
+          motion); hidden client-side while the 3D board is the landing. */}
+      <div className="classic-content">
+        <Hero />
+        <FeaturedProjects />
+        <ClientWork />
+        <Skills />
+        <Experience />
+        <Education />
+        <Personal />
+        <Contact />
+      </div>
       <RevealObserver />
     </>
   );
